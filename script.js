@@ -1,6 +1,7 @@
 // This is the boilerplate code given for you
 // You can modify this code
 // Product data
+
 const products = [
   { id: 1, name: "Product 1", price: 10 },
   { id: 2, name: "Product 2", price: 20 },
@@ -9,90 +10,60 @@ const products = [
   { id: 5, name: "Product 5", price: 50 },
 ];
 
-// DOM elements
-const productList = document.getElementById("product-list");
-const cartList = document.getElementById("cart-list");
-const clearCartBtn = document.getElementById("clear-cart-btn");
-
-// Render product list
+// Function to render products
 function renderProducts() {
-  products.forEach((product) => {
-    const li = document.createElement("li");
-    li.innerHTML = `${product.name} - $${product.price} <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>`;
-    productList.appendChild(li);
+  const productList = document.getElementById('product-list');
+  products.forEach(product => {
+    const productItem = document.createElement('li');
+    productItem.className = 'product';
+    productItem.innerHTML = `
+      <span>${product.name} - $${product.price}</span>
+      <button onclick="addToCart(${product.id})">Add to Cart</button>
+    `;
+    productList.appendChild(productItem);
   });
 }
 
-// Get cart from session storage
-function getCart() {
-  const cart = sessionStorage.getItem('cart');
-  return cart ? JSON.parse(cart) : [];
-}
-
-// Save cart to session storage
-function saveCart(cart) {
-  sessionStorage.setItem('cart', JSON.stringify(cart));
-}
-
-// Render cart list
+// Function to render cart
 function renderCart() {
-  const cart = getCart();
+  const cartList = document.getElementById('cart-list');
   cartList.innerHTML = '';
-  cart.forEach((item) => {
-    const li = document.createElement("li");
-    li.innerHTML = `${item.name} - $${item.price} <button class="remove-from-cart-btn" data-id="${item.id}">Remove</button>`;
-    cartList.appendChild(li);
+  const cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+  cart.forEach(item => {
+    const cartItem = document.createElement('li');
+    cartItem.className = 'cart-item';
+    cartItem.innerHTML = `
+      <span>${item.name} - $${item.price}</span>
+      <button onclick="removeFromCart(${item.id})">Remove</button>
+    `;
+    cartList.appendChild(cartItem);
   });
 }
 
-// Add item to cart
+// Function to add product to cart
 function addToCart(productId) {
-  const cart = getCart();
-  const product = products.find(p => p.id === parseInt(productId));
-  if (product) {
-    const existingItem = cart.find(item => item.id === product.id);
-    if (!existingItem) {
-      cart.push(product);
-      saveCart(cart);
-      renderCart();
-    }
-  }
-}
-
-// Remove item from cart
-function removeFromCart(productId) {
-  let cart = getCart();
-  cart = cart.filter(item => item.id !== parseInt(productId));
-  saveCart(cart);
+  const product = products.find(p => p.id === productId);
+  let cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+  cart.push(product);
+  sessionStorage.setItem('cart', JSON.stringify(cart));
   renderCart();
 }
 
-// Clear cart
-function clearCart() {
+// Function to remove product from cart
+function removeFromCart(productId) {
+  let cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+  cart = cart.filter(item => item.id !== productId);
+  sessionStorage.setItem('cart', JSON.stringify(cart));
+  renderCart();
+}
+
+// Function to clear the cart
+document.getElementById('clear-cart-btn').addEventListener('click', () => {
   sessionStorage.removeItem('cart');
   renderCart();
-}
-
-// Event listeners
-productList.addEventListener('click', (event) => {
-  if (event.target.classList.contains('add-to-cart-btn')) {
-    const productId = event.target.getAttribute('data-id');
-    addToCart(productId);
-  }
 });
 
-cartList.addEventListener('click', (event) => {
-  if (event.target.classList.contains('remove-from-cart-btn')) {
-    const productId = event.target.getAttribute('data-id');
-    removeFromCart(productId);
-  }
-});
-
-clearCartBtn.addEventListener('click', () => {
-  clearCart();
-});
-
-// Initial render
+// Initial rendering
 renderProducts();
 renderCart();
 
